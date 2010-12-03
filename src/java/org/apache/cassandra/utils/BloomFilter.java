@@ -18,11 +18,12 @@
 
 package org.apache.cassandra.utils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
+import java.io.DataOutputStream;
+import java.io.ObjectOutputStream;
 
 import org.apache.cassandra.io.ICompactSerializer;
 import org.slf4j.Logger;
@@ -35,12 +36,14 @@ public class BloomFilter extends Filter
 
     private static final int EXCESS = 20;
 
+    private static MurmurHash hasher = new MurmurHash();
+
     public static ICompactSerializer<BloomFilter> serializer()
     {
         return serializer_;
     }
 
-    private BitSet filter_;
+    public BitSet filter_;
 
     BloomFilter(int hashes, BitSet filter)
     {
@@ -106,14 +109,9 @@ public class BloomFilter extends Filter
         filter_.clear();
     }
 
-    int buckets()
+    private int buckets()
     {
         return filter_.size();
-    }
-
-    BitSet filter()
-    {
-        return filter_;
     }
 
     public boolean isPresent(ByteBuffer key)
@@ -171,21 +169,41 @@ public class BloomFilter extends Filter
         set.set(0, 64);
         return new BloomFilter(1, set);
     }
-}
 
-class BloomFilterSerializer implements ICompactSerializer<BloomFilter>
-{
-    public void serialize(BloomFilter bf, DataOutputStream dos)
-            throws IOException
+    public int[] getHashBuckets(ByteBuffer key)
     {
-        dos.writeInt(bf.getHashCount());
-        BitSetSerializer.serialize(bf.filter(), dos);
+        return BloomFilter.getHashBuckets(key, hashCount, buckets());
     }
 
-    public BloomFilter deserialize(DataInputStream dis) throws IOException
+    // Murmur is faster than an SHA-based approach and provides as-good collision
+    // resistance.  The combinatorial generation approach described in
+    // http://www.eecs.harvard.edu/~kirsch/pubs/bbbf/esa06.pdf
+    // does prove to work in actual tests, and is obviously faster
+    // than performing further iterations of murmur.
+    static int[] getHashBuckets(ByteBuffer b, int hashCount, int max)
     {
-        int hashes = dis.readInt();
-        BitSet bs = BitSetSerializer.deserialize(dis);
-        return new BloomFilter(hashes, bs);
+        int[] result = new int[hashCount];
+        int hash1 = hasher.hash(b.array(), b.position()+b.arrayOffset(), b.remaining(), 0);
+        int hash2 = hasher.hash(b.array(), b.position()+b.arrayOffset(), b.remaining(), hash1);
+        for (int i = 0; i < hashCount; i++)
+        {
+            result[i] = Math.abs((hash1 + i * hash2) % max);
+        }
+        return result;
     }
+
+    ICompactSerializer<Filter> getSerializer()
+    {
+        Method method = null;
+        try
+        {
+            method = getClass().getMethod("serializer");
+            return (ICompactSerializer<Filter>) method.invoke(null);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

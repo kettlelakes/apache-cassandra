@@ -34,6 +34,8 @@ import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.io.util.FileDataInput;
 import org.apache.cassandra.io.util.FileMark;
 import org.apache.cassandra.utils.BloomFilter;
+import org.apache.cassandra.utils.BigBloomFilter;
+import org.apache.cassandra.utils.Filter;
 import org.apache.cassandra.utils.FBUtilities;
 
 /**
@@ -97,14 +99,20 @@ public class IndexHelper
      * @return bloom filter summarizing the column information
      * @throws java.io.IOException
      */
-    public static BloomFilter defreezeBloomFilter(DataInput file) throws IOException
+    public static Filter defreezeBloomFilter(DataInput file, boolean useOldBF) throws IOException
     {
         int size = file.readInt();
         byte[] bytes = new byte[size];
         file.readFully(bytes);
-        
+
         ByteArrayInputStream bufIn = new ByteArrayInputStream(bytes);
-        return BloomFilter.serializer().deserialize(new DataInputStream(bufIn));
+        if (useOldBF)
+        {
+          return BloomFilter.serializer().deserialize(new DataInputStream(bufIn));
+        } else {
+          return BigBloomFilter.serializer().deserialize(new DataInputStream(bufIn));
+        }
+        
     }
 
     /**

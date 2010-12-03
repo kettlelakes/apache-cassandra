@@ -56,7 +56,6 @@ import org.apache.cassandra.io.util.FileDataInput;
 import org.apache.cassandra.io.util.SegmentedFile;
 import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.utils.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +127,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
     private SegmentedFile dfile;
 
     private IndexSummary indexSummary;
-    private BloomFilter bf;
+    private Filter bf;
 
     private InstrumentedCache<Pair<Descriptor,DecoratedKey>, Long> keyCache;
 
@@ -212,7 +211,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
     /**
      * Open a RowIndexedReader which already has its state initialized (by SSTableWriter).
      */
-    static SSTableReader internalOpen(Descriptor desc, Set<Component> components, CFMetaData metadata, IPartitioner partitioner, SegmentedFile ifile, SegmentedFile dfile, IndexSummary isummary, BloomFilter bf, long maxDataAge, EstimatedHistogram rowsize,
+    static SSTableReader internalOpen(Descriptor desc, Set<Component> components, CFMetaData metadata, IPartitioner partitioner, SegmentedFile ifile, SegmentedFile dfile, IndexSummary isummary, Filter bf, long maxDataAge, EstimatedHistogram rowsize,
                                       EstimatedHistogram columncount) throws IOException
     {
         assert desc != null && partitioner != null && ifile != null && dfile != null && isummary != null && bf != null;
@@ -226,7 +225,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
                           SegmentedFile ifile,
                           SegmentedFile dfile,
                           IndexSummary indexSummary,
-                          BloomFilter bloomFilter,
+                          Filter bloomFilter,
                           long maxDataAge,
                           EstimatedHistogram rowSizes,
                           EstimatedHistogram columnCounts)
@@ -256,7 +255,13 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
         DataInputStream stream = new DataInputStream(new FileInputStream(descriptor.filenameFor(Component.FILTER)));
         try
         {
-            bf = BloomFilter.serializer().deserialize(stream);
+            if (descriptor.usesOldBloomFilter)
+            {
+              bf = BloomFilter.serializer().deserialize(stream);
+            } else
+            {
+              bf = BigBloomFilter.serializer().deserialize(stream);
+            }
         }
         finally
         {
@@ -352,7 +357,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
         bf = BloomFilter.alwaysMatchingBloomFilter();
     }
 
-    public BloomFilter getBloomFilter()
+    public Filter getBloomFilter()
     {
       return bf;
     }

@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  * <p>The C version of MurmurHash 2.0 found at that site was ported
  * to Java by Andrzej Bialecki (ab at getopt org).</p>
  */
-public class MurmurHash {  
+public class MurmurHash {
   public int hash(byte[] data, int offset, int length, int seed) {
     int m = 0x5bd1e995;
     int r = 24;

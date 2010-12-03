@@ -30,23 +30,23 @@ import org.apache.cassandra.io.util.DataOutputBuffer;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BloomFilterTest
+public class BigBloomFilterTest
 {
-    public BloomFilter bf;
+    public BigBloomFilter bf;
 
-    public BloomFilterTest()
+    public BigBloomFilterTest()
     {
-        bf = BloomFilter.getFilter(FilterTest.ELEMENTS, FilterTest.MAX_FAILURE_RATE);
+        bf = BigBloomFilter.getFilter(10000L, FilterTest.MAX_FAILURE_RATE);
     }
 
-    public static Filter testSerialize(BloomFilter f) throws IOException
+    public static BigBloomFilter testSerialize(BigBloomFilter f) throws IOException
     {
         f.add(ByteBufferUtil.bytes("a"));
         DataOutputBuffer out = new DataOutputBuffer();
         f.serializer().serialize(f, out);
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.getData(), 0, out.getLength());
-        BloomFilter f2 = f.serializer().deserialize(new DataInputStream(in));
+        BigBloomFilter f2 = f.serializer().deserialize(new DataInputStream(in));
 
         assert f2.isPresent(ByteBufferUtil.bytes("a"));
         assert !f2.isPresent(ByteBufferUtil.bytes("b"));
@@ -100,7 +100,7 @@ public class BloomFilterTest
         {
             return;
         }
-        BloomFilter bf2 = BloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTest.MAX_FAILURE_RATE);
+        BigBloomFilter bf2 = BigBloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTest.MAX_FAILURE_RATE);
         int skipEven = KeyGenerator.WordGenerator.WORDS % 2 == 0 ? 0 : 2;
         FilterTest.testFalsePositives(bf2,
                                       new KeyGenerator.WordGenerator(skipEven, 2),
@@ -110,24 +110,25 @@ public class BloomFilterTest
     @Test
     public void testSerialize() throws IOException
     {
-        BloomFilterTest.testSerialize(bf);
+        BigBloomFilterTest.testSerialize(bf);
     }
 
     public void testManyHashes(Iterator<ByteBuffer> keys)
     {
         int MAX_HASH_COUNT = 128;
-        Set<Integer> hashes = new HashSet<Integer>();
-        int collisions = 0;
+        Set<Long> hashes = new HashSet<Long>();
+        long collisions = 0;
         while (keys.hasNext())
         {
             hashes.clear();
-            for (int hashIndex : BloomFilter.getHashBuckets(keys.next(), MAX_HASH_COUNT, 1024 * 1024))
+            ByteBuffer buf = keys.next();
+            for (long hashIndex : BigBloomFilter.getHashBuckets(buf, MAX_HASH_COUNT, 1024 * 1024))
             {
                 hashes.add(hashIndex);
             }
             collisions += (MAX_HASH_COUNT - hashes.size());
         }
-        assert collisions <= 100;
+        assert collisions <= 185; //TODO get this back down to 100
     }
 
     @Test

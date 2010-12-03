@@ -19,6 +19,7 @@ package org.apache.cassandra.utils.obs;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import java.util.BitSet;
 
 /** An "open" BitSet implementation that allows direct access to the array of words
  * storing the bits.
@@ -106,7 +107,14 @@ public class OpenBitSet implements Cloneable, Serializable {
     this.bits = bits;
     this.wlen = numWords;
   }
-  
+
+
+  /** Contructs an OpenBitset from a BitSet
+  */
+  public OpenBitSet(BitSet bits) {
+    this(bits.length());
+  }
+
   /** Returns the current capacity in bits (1 greater than the index of the last bit) */
   public long capacity() { return bits.length << 6; }
 
