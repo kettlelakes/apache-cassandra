@@ -47,17 +47,17 @@ class SimpleSliceReader extends AbstractIterator<IColumn> implements IColumnIter
     private int i;
     private FileMark mark;
 
-    public SimpleSliceReader(CFMetaData metadata, FileDataInput input, ByteBuffer finishColumn)
+    public SimpleSliceReader(SSTableReader sstable, FileDataInput input, ByteBuffer finishColumn)
     {
         this.file = input;
         this.finishColumn = finishColumn;
-        comparator = metadata.comparator;
+        comparator = sstable.metadata.comparator;
         try
         {
             IndexHelper.skipBloomFilter(file);
             IndexHelper.skipIndex(file);
 
-            emptyColumnFamily = ColumnFamily.serializer().deserializeFromSSTableNoColumns(ColumnFamily.create(metadata), file);
+            emptyColumnFamily = ColumnFamily.serializer().deserializeFromSSTableNoColumns(ColumnFamily.create(sstable.metadata), file);
             columns = file.readInt();
             mark = file.mark();
         }
