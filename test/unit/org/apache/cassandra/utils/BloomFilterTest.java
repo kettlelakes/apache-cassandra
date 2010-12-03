@@ -36,7 +36,7 @@ public class BloomFilterTest
 
     public BloomFilterTest()
     {
-        bf = BloomFilter.getFilter(FilterTest.ELEMENTS, FilterTest.MAX_FAILURE_RATE);
+        bf = BloomFilter.getFilter(FilterTestHelper.ELEMENTS, FilterTestHelper.MAX_FAILURE_RATE);
     }
 
     public static Filter testSerialize(BloomFilter f) throws IOException
@@ -84,13 +84,13 @@ public class BloomFilterTest
     @Test
     public void testFalsePositivesInt()
     {
-        FilterTest.testFalsePositives(bf, FilterTest.intKeys(), FilterTest.randomKeys2());
+        FilterTestHelper.testFalsePositives(bf, FilterTestHelper.intKeys(), FilterTestHelper.randomKeys2());
     }
 
     @Test
     public void testFalsePositivesRandom()
     {
-        FilterTest.testFalsePositives(bf, FilterTest.randomKeys(), FilterTest.randomKeys2());
+        FilterTestHelper.testFalsePositives(bf, FilterTestHelper.randomKeys(), FilterTestHelper.randomKeys2());
     }
 
     @Test
@@ -100,9 +100,9 @@ public class BloomFilterTest
         {
             return;
         }
-        BloomFilter bf2 = BloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTest.MAX_FAILURE_RATE);
+        BloomFilter bf2 = BloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTestHelper.MAX_FAILURE_RATE);
         int skipEven = KeyGenerator.WordGenerator.WORDS % 2 == 0 ? 0 : 2;
-        FilterTest.testFalsePositives(bf2,
+        FilterTestHelper.testFalsePositives(bf2,
                                       new KeyGenerator.WordGenerator(skipEven, 2),
                                       new KeyGenerator.WordGenerator(1, 2));
     }
@@ -133,6 +133,6 @@ public class BloomFilterTest
     @Test
     public void testManyRandom()
     {
-        testManyHashes(FilterTest.randomKeys());
+        testManyHashes(FilterTestHelper.randomKeys());
     }
 }

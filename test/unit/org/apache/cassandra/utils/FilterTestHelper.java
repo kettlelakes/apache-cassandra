@@ -29,7 +29,7 @@ import java.util.Set;
 import org.apache.cassandra.io.util.DataOutputBuffer;
 import org.junit.Test;
 
-public class FilterTest
+public class FilterTestHelper
 {
     // used by filter subclass tests
 

@@ -33,8 +33,8 @@ public class LongBloomFilterTest
     @Test
     public void testBigInt() {
         int size = 10 * 1000 * 1000;
-        bf = BloomFilter.getFilter(size, FilterTest.spec.bucketsPerElement);
-        FilterTest.testFalsePositives(bf,
+        bf = BloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
+       FilterTestHelper.testFalsePositives(bf,
                                       new KeyGenerator.IntGenerator(size),
                                       new KeyGenerator.IntGenerator(size, size * 2));
     }
@@ -42,18 +42,18 @@ public class LongBloomFilterTest
     @Test
     public void testBigRandom() {
         int size = 10 * 1000 * 1000;
-        bf = BloomFilter.getFilter(size, FilterTest.spec.bucketsPerElement);
-        FilterTest.testFalsePositives(bf,
+        bf = BloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
+       FilterTestHelper.testFalsePositives(bf,
                                       new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size),
                                       new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size));
     }
 
     @Test
     public void timeit() {
-        int size = 300 * FilterTest.ELEMENTS;
-        bf = BloomFilter.getFilter(size, FilterTest.spec.bucketsPerElement);
+        int size = 300 *FilterTestHelper.ELEMENTS;
+        bf = BloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
         for (int i = 0; i < 10; i++) {
-            FilterTest.testFalsePositives(bf,
+           FilterTestHelper.testFalsePositives(bf,
                                           new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size),
                                           new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size));
             bf.clear();
