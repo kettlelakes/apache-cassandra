@@ -18,12 +18,9 @@
 
 package org.apache.cassandra.utils;
 
-import java.lang.reflect.Method;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
-import java.io.DataOutputStream;
-import java.io.ObjectOutputStream;
 
 import org.apache.cassandra.io.ICompactSerializer;
 import org.slf4j.Logger;
@@ -43,7 +40,7 @@ public class BloomFilter extends Filter
         return serializer_;
     }
 
-    public BitSet filter_;
+    private BitSet filter_;
 
     BloomFilter(int hashes, BitSet filter)
     {
@@ -109,7 +106,7 @@ public class BloomFilter extends Filter
         filter_.clear();
     }
 
-    private int buckets()
+    int buckets()
     {
         return filter_.size();
     }
@@ -192,18 +189,7 @@ public class BloomFilter extends Filter
         return result;
     }
 
-    ICompactSerializer<Filter> getSerializer()
-    {
-        Method method = null;
-        try
-        {
-            method = getClass().getMethod("serializer");
-            return (ICompactSerializer<Filter>) method.invoke(null);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+    public BitSet getBitSet(){
+      return filter_;
     }
-
 }

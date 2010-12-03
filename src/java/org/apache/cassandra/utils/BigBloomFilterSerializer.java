@@ -27,7 +27,8 @@ class BigBloomFilterSerializer implements ICompactSerializer<BigBloomFilter>
         {
           OpenBitSet bs = (OpenBitSet) ois.readObject();
           return new BigBloomFilter(hashes, bs);
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
           throw new RuntimeException(e);
         }

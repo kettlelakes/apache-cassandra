@@ -16,7 +16,7 @@ class BloomFilterSerializer implements ICompactSerializer<BloomFilter>
     {
         dos.writeInt(bf.getHashCount());
         ObjectOutputStream oos = new ObjectOutputStream(dos);
-        oos.writeObject(bf.filter_);
+        oos.writeObject(bf.getBitSet());
         oos.flush();
     }
 

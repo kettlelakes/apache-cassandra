@@ -19,11 +19,6 @@
 package org.apache.cassandra.utils;
 
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.apache.cassandra.io.ICompactSerializer;
 
 public abstract class Filter
 {

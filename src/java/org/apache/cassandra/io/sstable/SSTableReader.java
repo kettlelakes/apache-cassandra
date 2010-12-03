@@ -258,7 +258,8 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
             if (descriptor.usesOldBloomFilter)
             {
               bf = BloomFilter.serializer().deserialize(stream);
-            } else
+            }
+            else
             {
               bf = BigBloomFilter.serializer().deserialize(stream);
             }
