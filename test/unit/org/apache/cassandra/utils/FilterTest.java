@@ -74,4 +74,9 @@ public class FilterTest
         assert fp_ratio < 1.03 : fp_ratio;
     }
 
+    public void testTrue()
+    {
+      assert true;
+    }
+
 }
