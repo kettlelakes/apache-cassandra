@@ -3,8 +3,6 @@ package org.apache.cassandra.utils;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import org.apache.cassandra.utils.obs.OpenBitSet;
 import org.apache.cassandra.io.ICompactSerializer;
 
@@ -13,25 +11,28 @@ class BloomFilterSerializer implements ICompactSerializer<BloomFilter>
     public void serialize(BloomFilter bf, DataOutputStream dos)
             throws IOException
     {
+        long[] bits = bf.bitset.getBits();
+        int bitLength = bits.length;
+
         dos.writeInt(bf.getHashCount());
-        ObjectOutputStream oos = new ObjectOutputStream(dos);
-        oos.writeObject(bf.bitset);
-        oos.flush();
+        dos.writeInt(bitLength);
+
+        for (int i=0; i < bitLength; i++) {
+            dos.writeLong(bits[i]);
+        }
+        dos.flush();
     }
 
     public BloomFilter deserialize(DataInputStream dis) throws IOException
     {
         int hashes = dis.readInt();
-        ObjectInputStream ois = new ObjectInputStream(dis);
-        try
-        {
-          OpenBitSet bs = (OpenBitSet) ois.readObject();
-          return new BloomFilter(hashes, bs);
+        int bitLength = dis.readInt();
+        long[] bits = new long[bitLength];
+        for (int i = 0; i < bitLength; i++) {
+            bits[i] = dis.readLong();
         }
-        catch (ClassNotFoundException e)
-        {
-          throw new RuntimeException(e);
-        }
+        OpenBitSet bs = new OpenBitSet(bits, bitLength);
+        return new BloomFilter(hashes, bs);
     }
 }
 
