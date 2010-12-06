@@ -257,11 +257,11 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
         {
             if (descriptor.usesOldBloomFilter)
             {
-              bf = LegacyBloomFilter.serializer().deserialize(stream);
+                bf = LegacyBloomFilter.serializer().deserialize(stream);
             }
             else
             {
-              bf = BloomFilter.serializer().deserialize(stream);
+                bf = BloomFilter.serializer().deserialize(stream);
             }
         }
         finally
