@@ -54,29 +54,12 @@ public class BloomFilter extends Filter
 
 
   /**
-   * Calculates the maximum number of buckets per element that this implementation
-   * can support.  Crucially, it will lower the bucket count if necessary to meet
-   * BitSet's size restrictions.
-   */
-  private static int maxBucketsPerElement(long numElements)
-  {
-      numElements = Math.max(1, numElements);
-      double v = (Long.MAX_VALUE - EXCESS) / (double)numElements;
-      if (v < 1.0)
-      {
-          throw new UnsupportedOperationException("Cannot compute probabilities for " + numElements + " elements.");
-      }
-      return Math.min(BloomCalculations.probs.length - 1, (int)v);
-  }
-
-
-  /**
    * @return A BloomFilter with the lowest practical false positive probability
    * for the given number of elements.
    */
   public static BloomFilter getFilter(long numElements, int targetBucketsPerElem)
   {
-      int maxBucketsPerElement = Math.max(1, maxBucketsPerElement(numElements));
+      int maxBucketsPerElement = Math.max(1, BloomCalculations.maxBucketsPerElement(numElements));
       int bucketsPerElement = Math.min(targetBucketsPerElem, maxBucketsPerElement);
       if (bucketsPerElement < targetBucketsPerElem)
       {
@@ -96,7 +79,7 @@ public class BloomFilter extends Filter
   public static BloomFilter getFilter(long numElements, double maxFalsePosProbability)
   {
       assert maxFalsePosProbability <= 1.0 : "Invalid probability";
-      int bucketsPerElement = maxBucketsPerElement(numElements);
+      int bucketsPerElement = BloomCalculations.maxBucketsPerElement(numElements);
       BloomCalculations.BloomSpecification spec = BloomCalculations.computeBloomSpec(bucketsPerElement, maxFalsePosProbability);
       return new BloomFilter(spec.K, bucketsFor(numElements, spec.bucketsPerElement));
   }
