@@ -39,7 +39,6 @@ import org.apache.cassandra.io.sstable.IndexHelper;
 import org.apache.cassandra.io.sstable.SSTableReader;
 import org.apache.cassandra.io.util.FileDataInput;
 import org.apache.cassandra.io.util.FileMark;
-import org.apache.cassandra.utils.BloomFilter;
 import org.apache.cassandra.utils.Filter;
 import org.apache.cassandra.utils.FBUtilities;
 import org.slf4j.Logger;

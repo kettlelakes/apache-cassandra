@@ -30,23 +30,23 @@ import org.apache.cassandra.io.util.DataOutputBuffer;
 import org.junit.Before;
 import org.junit.Test;
 
-public class BigBloomFilterTest
+public class LegacyBloomFilterTest
 {
-    public BigBloomFilter bf;
+    public LegacyBloomFilter bf;
 
-    public BigBloomFilterTest()
+    public LegacyBloomFilterTest()
     {
-        bf = BigBloomFilter.getFilter(10000L, FilterTestHelper.MAX_FAILURE_RATE);
+        bf = LegacyBloomFilter.getFilter(FilterTestHelper.ELEMENTS, FilterTestHelper.MAX_FAILURE_RATE);
     }
 
-    public static BigBloomFilter testSerialize(BigBloomFilter f) throws IOException
+    public static Filter testSerialize(LegacyBloomFilter f) throws IOException
     {
         f.add(ByteBufferUtil.bytes("a"));
         DataOutputBuffer out = new DataOutputBuffer();
         f.serializer().serialize(f, out);
 
         ByteArrayInputStream in = new ByteArrayInputStream(out.getData(), 0, out.getLength());
-        BigBloomFilter f2 = f.serializer().deserialize(new DataInputStream(in));
+        LegacyBloomFilter f2 = f.serializer().deserialize(new DataInputStream(in));
 
         assert f2.isPresent(ByteBufferUtil.bytes("a"));
         assert !f2.isPresent(ByteBufferUtil.bytes("b"));
@@ -84,13 +84,13 @@ public class BigBloomFilterTest
     @Test
     public void testFalsePositivesInt()
     {
-       FilterTestHelper.testFalsePositives(bf, FilterTestHelper.intKeys(), FilterTestHelper.randomKeys2());
+        FilterTestHelper.testFalsePositives(bf, FilterTestHelper.intKeys(), FilterTestHelper.randomKeys2());
     }
 
     @Test
     public void testFalsePositivesRandom()
     {
-       FilterTestHelper.testFalsePositives(bf, FilterTestHelper.randomKeys(), FilterTestHelper.randomKeys2());
+        FilterTestHelper.testFalsePositives(bf, FilterTestHelper.randomKeys(), FilterTestHelper.randomKeys2());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class BigBloomFilterTest
         {
             return;
         }
-        BigBloomFilter bf2 = BigBloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTestHelper.MAX_FAILURE_RATE);
+        LegacyBloomFilter bf2 = LegacyBloomFilter.getFilter(KeyGenerator.WordGenerator.WORDS / 2, FilterTestHelper.MAX_FAILURE_RATE);
         int skipEven = KeyGenerator.WordGenerator.WORDS % 2 == 0 ? 0 : 2;
         FilterTestHelper.testFalsePositives(bf2,
                                       new KeyGenerator.WordGenerator(skipEven, 2),
@@ -110,25 +110,24 @@ public class BigBloomFilterTest
     @Test
     public void testSerialize() throws IOException
     {
-        BigBloomFilterTest.testSerialize(bf);
+        LegacyBloomFilterTest.testSerialize(bf);
     }
 
     public void testManyHashes(Iterator<ByteBuffer> keys)
     {
         int MAX_HASH_COUNT = 128;
-        Set<Long> hashes = new HashSet<Long>();
-        long collisions = 0;
+        Set<Integer> hashes = new HashSet<Integer>();
+        int collisions = 0;
         while (keys.hasNext())
         {
             hashes.clear();
-            ByteBuffer buf = keys.next();
-            for (long hashIndex : BigBloomFilter.getHashBuckets(buf, MAX_HASH_COUNT, 1024 * 1024))
+            for (int hashIndex : LegacyBloomFilter.getHashBuckets(keys.next(), MAX_HASH_COUNT, 1024 * 1024))
             {
                 hashes.add(hashIndex);
             }
             collisions += (MAX_HASH_COUNT - hashes.size());
         }
-        assert collisions <= 185; //TODO get this back down to 100
+        assert collisions <= 100;
     }
 
     @Test

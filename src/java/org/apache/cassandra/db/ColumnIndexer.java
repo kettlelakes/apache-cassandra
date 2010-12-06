@@ -28,7 +28,7 @@ import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.io.util.DataOutputBuffer;
 import org.apache.cassandra.io.sstable.IndexHelper;
 import org.apache.cassandra.io.util.IIterableColumns;
-import org.apache.cassandra.utils.BigBloomFilter;
+import org.apache.cassandra.utils.BloomFilter;
 import org.apache.cassandra.utils.Filter;
 
 
@@ -60,7 +60,7 @@ public class ColumnIndexer
     {
         int columnCount = columns.getEstimatedColumnCount();
 
-        BigBloomFilter bf = BigBloomFilter.getFilter(columnCount, 4);
+        BloomFilter bf = BloomFilter.getFilter(columnCount, 4);
 
         if (columnCount == 0)
         {
@@ -130,17 +130,17 @@ public class ColumnIndexer
         }
 	}
 
-    private static void writeEmptyHeader(DataOutput dos, BigBloomFilter bf)
+    private static void writeEmptyHeader(DataOutput dos, BloomFilter bf)
             throws IOException
     {
         writeBloomFilter(dos, bf);
         dos.writeInt(0);
     }
 
-    private static void writeBloomFilter(DataOutput dos, BigBloomFilter bf) throws IOException
+    private static void writeBloomFilter(DataOutput dos, BloomFilter bf) throws IOException
     {
         DataOutputBuffer bufOut = new DataOutputBuffer();
-        BigBloomFilter.serializer().serialize(bf, bufOut);
+        BloomFilter.serializer().serialize(bf, bufOut);
         dos.writeInt(bufOut.getLength());
         dos.write(bufOut.getData(), 0, bufOut.getLength());
     }

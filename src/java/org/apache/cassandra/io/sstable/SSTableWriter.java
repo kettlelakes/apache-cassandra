@@ -43,7 +43,7 @@ import org.apache.cassandra.io.util.FileMark;
 import org.apache.cassandra.io.util.FileUtils;
 import org.apache.cassandra.io.util.SegmentedFile;
 import org.apache.cassandra.service.StorageService;
-import org.apache.cassandra.utils.BigBloomFilter;
+import org.apache.cassandra.utils.BloomFilter;
 import org.apache.cassandra.utils.EstimatedHistogram;
 import org.apache.cassandra.utils.FBUtilities;
 import org.slf4j.Logger;
@@ -357,7 +357,7 @@ public class SSTableWriter extends SSTable
         public final IPartitioner partitioner;
         public final SegmentedFile.Builder builder;
         public final IndexSummary summary;
-        public final BigBloomFilter bf;
+        public final BloomFilter bf;
         private FileMark mark;
 
         IndexWriter(Descriptor desc, IPartitioner part, long keyCount) throws IOException
@@ -367,7 +367,7 @@ public class SSTableWriter extends SSTable
             indexFile = new BufferedRandomAccessFile(desc.filenameFor(SSTable.COMPONENT_INDEX), "rw", 8 * 1024 * 1024);
             builder = SegmentedFile.getBuilder(DatabaseDescriptor.getIndexAccessMode());
             summary = new IndexSummary(keyCount);
-            bf = BigBloomFilter.getFilter(keyCount, 15);
+            bf = BloomFilter.getFilter(keyCount, 15);
         }
 
         public void afterAppend(DecoratedKey key, long dataPosition) throws IOException
@@ -391,7 +391,7 @@ public class SSTableWriter extends SSTable
             // bloom filter
             FileOutputStream fos = new FileOutputStream(desc.filenameFor(SSTable.COMPONENT_FILTER));
             DataOutputStream stream = new DataOutputStream(fos);
-            BigBloomFilter.serializer().serialize(bf, stream);
+            BloomFilter.serializer().serialize(bf, stream);
             stream.flush();
             fos.getFD().sync();
             stream.close();

@@ -257,11 +257,11 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
         {
             if (descriptor.usesOldBloomFilter)
             {
-              bf = BloomFilter.serializer().deserialize(stream);
+              bf = LegacyBloomFilter.serializer().deserialize(stream);
             }
             else
             {
-              bf = BigBloomFilter.serializer().deserialize(stream);
+              bf = BloomFilter.serializer().deserialize(stream);
             }
         }
         finally
@@ -291,7 +291,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
             indexSummary = new IndexSummary(estimatedKeys);
             if (recreatebloom)
                 // estimate key count based on index length
-                bf = BloomFilter.getFilter(estimatedKeys, 15);
+                bf = LegacyBloomFilter.getFilter(estimatedKeys, 15);
             while (true)
             {
                 long indexPosition = input.getFilePointer();
@@ -355,7 +355,7 @@ public class SSTableReader extends SSTable implements Comparable<SSTableReader>
      */
     public void forceFilterFailures()
     {
-        bf = BloomFilter.alwaysMatchingBloomFilter();
+        bf = LegacyBloomFilter.alwaysMatchingBloomFilter();
     }
 
     public Filter getBloomFilter()

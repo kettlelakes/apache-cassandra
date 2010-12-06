@@ -1,5 +1,6 @@
 package org.apache.cassandra.utils;
 
+import java.util.BitSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,31 +9,28 @@ import java.io.ObjectInputStream;
 import org.apache.cassandra.utils.obs.OpenBitSet;
 import org.apache.cassandra.io.ICompactSerializer;
 
-class BigBloomFilterSerializer implements ICompactSerializer<BigBloomFilter>
+class LegacyBloomFilterSerializer implements ICompactSerializer<LegacyBloomFilter>
 {
-    public void serialize(BigBloomFilter bf, DataOutputStream dos)
+    public void serialize(LegacyBloomFilter bf, DataOutputStream dos)
             throws IOException
     {
         dos.writeInt(bf.getHashCount());
         ObjectOutputStream oos = new ObjectOutputStream(dos);
-        oos.writeObject(bf.bitset);
+        oos.writeObject(bf.getBitSet());
         oos.flush();
     }
 
-    public BigBloomFilter deserialize(DataInputStream dis) throws IOException
+    public LegacyBloomFilter deserialize(DataInputStream dis) throws IOException
     {
         int hashes = dis.readInt();
         ObjectInputStream ois = new ObjectInputStream(dis);
         try
         {
-          OpenBitSet bs = (OpenBitSet) ois.readObject();
-          return new BigBloomFilter(hashes, bs);
-        }
-        catch (ClassNotFoundException e)
+          BitSet bs = (BitSet) ois.readObject();
+          return new LegacyBloomFilter(hashes, bs);
+        } catch (ClassNotFoundException e)
         {
           throw new RuntimeException(e);
         }
     }
 }
-
-

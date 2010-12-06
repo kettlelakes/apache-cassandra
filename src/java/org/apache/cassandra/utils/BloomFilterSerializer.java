@@ -1,6 +1,5 @@
 package org.apache.cassandra.utils;
 
-import java.util.BitSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +15,7 @@ class BloomFilterSerializer implements ICompactSerializer<BloomFilter>
     {
         dos.writeInt(bf.getHashCount());
         ObjectOutputStream oos = new ObjectOutputStream(dos);
-        oos.writeObject(bf.getBitSet());
+        oos.writeObject(bf.bitset);
         oos.flush();
     }
 
@@ -26,11 +25,14 @@ class BloomFilterSerializer implements ICompactSerializer<BloomFilter>
         ObjectInputStream ois = new ObjectInputStream(dis);
         try
         {
-          BitSet bs = (BitSet) ois.readObject();
+          OpenBitSet bs = (OpenBitSet) ois.readObject();
           return new BloomFilter(hashes, bs);
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
           throw new RuntimeException(e);
         }
     }
 }
+
+

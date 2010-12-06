@@ -33,8 +33,8 @@ import java.util.List;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.io.util.FileDataInput;
 import org.apache.cassandra.io.util.FileMark;
+import org.apache.cassandra.utils.LegacyBloomFilter;
 import org.apache.cassandra.utils.BloomFilter;
-import org.apache.cassandra.utils.BigBloomFilter;
 import org.apache.cassandra.utils.Filter;
 import org.apache.cassandra.utils.FBUtilities;
 
@@ -108,11 +108,12 @@ public class IndexHelper
         ByteArrayInputStream bufIn = new ByteArrayInputStream(bytes);
         if (useOldBF)
         {
-          return BloomFilter.serializer().deserialize(new DataInputStream(bufIn));
-        } else {
-          return BigBloomFilter.serializer().deserialize(new DataInputStream(bufIn));
+          return LegacyBloomFilter.serializer().deserialize(new DataInputStream(bufIn));
         }
-        
+        else
+        {
+          return BloomFilter.serializer().deserialize(new DataInputStream(bufIn));
+        }
     }
 
     /**
