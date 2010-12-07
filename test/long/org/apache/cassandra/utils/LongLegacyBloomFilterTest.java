@@ -23,9 +23,9 @@ import java.util.Random;
 
 import org.junit.Test;
 
-public class LongBigBloomFilterTest
+public class LongLegacyBloomFilterTest
 {
-    public BigBloomFilter bf;
+    public LegacyBloomFilter bf;
 
     /**
      * NB: needs to run with -mx1G
@@ -33,8 +33,8 @@ public class LongBigBloomFilterTest
     @Test
     public void testBigInt() {
         int size = 10 * 1000 * 1000;
-        bf = BigBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
-       FilterTestHelper.testFalsePositives(bf,
+        bf = LegacyBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
+        FilterTestHelper.testFalsePositives(bf,
                                       new KeyGenerator.IntGenerator(size),
                                       new KeyGenerator.IntGenerator(size, size * 2));
     }
@@ -42,8 +42,8 @@ public class LongBigBloomFilterTest
     @Test
     public void testBigRandom() {
         int size = 10 * 1000 * 1000;
-        bf = BigBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
-       FilterTestHelper.testFalsePositives(bf,
+        bf = LegacyBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
+        FilterTestHelper.testFalsePositives(bf,
                                       new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size),
                                       new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size));
     }
@@ -51,9 +51,9 @@ public class LongBigBloomFilterTest
     @Test
     public void timeit() {
         int size = 300 *FilterTestHelper.ELEMENTS;
-        bf = BigBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
+        bf = LegacyBloomFilter.getFilter(size,FilterTestHelper.spec.bucketsPerElement);
         for (int i = 0; i < 10; i++) {
-           FilterTestHelper.testFalsePositives(bf,
+            FilterTestHelper.testFalsePositives(bf,
                                           new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size),
                                           new KeyGenerator.RandomStringGenerator(new Random().nextInt(), size));
             bf.clear();
